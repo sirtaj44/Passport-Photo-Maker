@@ -1,0 +1,840 @@
+<!-- Switch Button -->
+<button id="switchBtn" style="position:fixed; right:20px; top:50%; transform:translateY(-50%); padding:10px 15px; background:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer; z-index:1000;"></button>
+
+<!-- New Code Container (Default Visible) -->
+<div id="newApp" style="display:block;">
+  <!-- अपने New Code HTML यहाँ paste करें -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<style>
+/* Base Reset & Font */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif; 
+    background-color: #e9ecef; 
+    color: #343a40;
+}
+
+/* Main App Container */
+#passport-photo-app {
+    min-height: 100vh;
+    width: 100%;
+    margin: 0; 
+    padding: 40px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 30px; 
+}
+
+/* Header/Logo Section */
+.header-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.header-section h1 {
+    color: #007bff;
+    font-size: 2.8em;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+.header-section p {
+    color: #6c757d;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+/* Card Styling for all sections */
+.portal-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 95%;
+    max-width: 800px;
+    box-sizing: border-box;
+}
+
+/* Drop Area */
+#drop-area {
+    border: 3px dashed #17a2b8; 
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#drop-area.highlight {
+    background-color: #f0f8ff;
+    border-color: #007bff;
+}
+
+#file-input { display: none; }
+
+/* Buttons */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 30px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.05em;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+.button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+}
+
+.primary-button { background-color: #28a745; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); }
+.primary-button:hover { background-color: #1e7e34; }
+.download-button { 
+    background-color: #fd7e14; 
+    color: white;
+    box-shadow: 0 4px 10px rgba(253, 126, 20, 0.3);
+}
+.download-button:hover { background-color: #e8710c; }
+
+/* Cropper/Image Container */
+#image-container {
+    height: 480px; 
+    display: none; 
+}
+
+/* Controls Panel */
+#controls {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Output Area */
+#output-area {
+    display: none;
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+}
+
+#final-image-preview {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    border-radius: 5px;
+}
+</style>
+
+<div id="passport-photo-app">
+    <div class="header-section">
+        <h1><i class="fas fa-id-card-clip"></i> E-सेवा फ़ोटो जनरेटर</h1>
+        <p>प्रोफेशनल पासपोर्ट फोटो क्रॉपर और $\text{A4}$ प्रिंट शीट टूल।</p>
+    </div>
+    
+    <div id="drop-area" class="portal-card">
+        <p style="font-size: 1.2em; font-weight: 500;">फ़ोटो यहां **ड्रॉप** करें या</p>
+        <input type="file" id="file-input" accept="image/*" />
+        <label for="file-input" class="button"><i class="fas fa-upload"></i> फ़ाइल अपलोड करें</label>
+        <p style="font-size: 0.9em; color: #777;">पासपोर्ट साइज़ $\text{3.5 cm x 4.5 cm}$ एस्पेक्ट रेश्यो</p>
+    </div>
+
+    <div id="image-container" class="portal-card">
+        <img id="image-to-crop" src="" alt="Image to Crop" style="display:none;">
+    </div>
+
+    <div id="controls" class="portal-card">
+        <div class="control-group">
+            <p style="font-size: 1em; color: #007bff; font-weight: 600;">
+                <i class="fas fa-arrows-alt"></i> **क्रॉपिंग एडजस्ट करें:** कीबोर्ड के $\text{Arrow Keys}$ का उपयोग करें।
+            </p>
+            <label>
+                <input type="checkbox" id="add-white-border-checkbox" checked> 
+                <i class="fas fa-border-all"></i> **सफेद बॉर्डर (Stock) जोड़ें**
+            </label>
+            <label>
+                <input type="checkbox" id="add-black-border-checkbox"> 
+                <i class="fas fa-crop-simple"></i> **ब्लैक कटिंग गाइड** ($\text{3px}$)
+            </label>
+            
+            <button id="crop-button" class="button primary-button">
+                <i class="fas fa-check-circle"></i> क्रॉप और फ़ोटो तैयार करें
+            </button>
+        </div>
+
+        <div id="print-options" style="display:none; flex-direction: column; gap: 15px;">
+            <h3 style="color: #343a40; margin-top: 0;"><i class="fas fa-print"></i> प्रिंटिंग विकल्प</h3>
+            <select id="print-layout-select" style="padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                <option value="A4_6" selected>A4 साइज़ में 6 फ़ोटो (1 लाइन में)</option>
+            </select>
+            <button id="generate-print-button" class="button primary-button" style="margin-top: 10px;">
+                <i class="fas fa-file-pdf"></i> प्रिंट शीट जनरेट करें
+            </button>
+        </div>
+    </div>
+
+    <div id="output-area" class="portal-card">
+        <h3><i class="fas fa-paper-plane"></i> तैयार आउटपुट</h3>
+        <img id="final-image-preview" src="" alt="Final Passport Photo">
+        <a id="download-link" class="button download-button" download="A4_Print_Sheet.jpeg">
+            <i class="fas fa-download"></i> फ़ाइल डाउनलोड करें
+        </a>
+    </div>
+</div>
+
+<script>
+// --- DOM Elements ---
+const fileInput = document.getElementById('file-input');
+const dropArea = document.getElementById('drop-area');
+const controls = document.getElementById('controls');
+const cropButton = document.getElementById('crop-button');
+const finalImagePreview = document.getElementById('final-image-preview');
+const downloadLink = document.getElementById('download-link');
+const outputArea = document.getElementById('output-area');
+const addWhiteBorderCheckbox = document.getElementById('add-white-border-checkbox');
+const addBlackBorderCheckbox = document.getElementById('add-black-border-checkbox');
+const generatePrintButton = document.getElementById('generate-print-button');
+const imageToCrop = document.getElementById('image-to-crop');
+
+// --- Constants ---
+let cropper;
+let croppedImageBlob = null;
+const PASSPORT_ASPECT_RATIO = 3.5 / 4.5;
+const DPI = 300;
+
+// A4 Size in 300 DPI pixels
+const A4_WIDTH_PX = 2480; 
+const A4_HEIGHT_PX = 3508; 
+const PHOTO_COUNT = 6;
+const FIXED_TOP_MARGIN = 180; 
+
+// Dynamic Photo Size Calculation (THE FIX)
+// A4 चौड़ाई (2480px) में 6 फ़ोटो और 7 समान गैप/मार्जिन को समान रूप से फिट करने के लिए अधिकतम चौड़ाई की गणना
+const TOTAL_SLOTS = PHOTO_COUNT + 1; // 2 side margins + 5 internal gaps = 7 slots
+const MAX_PHOTO_WIDTH_PX = Math.floor(A4_WIDTH_PX / TOTAL_SLOTS);
+
+// Final Photo Dimensions (Aspect Ratio Maintained)
+// हम मानते हैं कि प्रत्येक फोटो (बॉर्डर सहित) को अधिकतम 354 पिक्सल की चौड़ाई मिल सकती है
+let FINAL_PHOTO_W_PX = MAX_PHOTO_WIDTH_PX;
+let FINAL_PHOTO_H_PX = Math.round(FINAL_PHOTO_W_PX / PASSPORT_ASPECT_RATIO); 
+
+// Note: If borders are added later (13px per side), the actual image size 
+// before borders must be reduced to ensure the final size does not exceed MAX_PHOTO_WIDTH_PX.
+// This logic is handled in the `createPrintSheet` function by using the actual width of `singlePhotoImg`.
+
+
+// --- Cropper Initialization ---
+function handleFiles(files) {
+    if (files.length === 0 || !files[0].type.startsWith('image/')) {
+        alert('कृपया एक इमेज फ़ाइल चुनें।');
+        return;
+    }
+    
+    const file = files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        if (cropper) cropper.destroy();
+
+        imageToCrop.src = e.target.result;
+        imageToCrop.style.display = 'block';
+        document.getElementById('image-container').style.display = 'block';
+        dropArea.style.display = 'none';
+        controls.style.display = 'flex'; 
+        document.getElementById('print-options').style.display = 'none';
+        outputArea.style.display = 'none';
+
+        cropper = new Cropper(imageToCrop, {
+            aspectRatio: PASSPORT_ASPECT_RATIO,
+            viewMode: 1, 
+            dragMode: 'move', 
+            autoCropArea: 0.8,
+            responsive: true,
+            background: false,
+            zoomable: true,
+            rotatable: false,
+            scalable: false,
+            wheelZoomRatio: 0, // FIX: Mouse wheel zooming is disabled
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+// FIX: Arrow Key Logic (Moves the CROP BOX (cropper-face) directly)
+document.addEventListener('keydown', (e) => {
+    if (!cropper || controls.style.display === 'none') return; 
+
+    // Move amount in pixels for the crop box
+    const moveAmount = 2; 
+    let deltaX = 0;
+    let deltaY = 0;
+
+    switch (e.key) {
+        case 'ArrowLeft':
+            e.preventDefault();
+            deltaX = -moveAmount; // Move crop box left
+            break;
+        case 'ArrowRight':
+            e.preventDefault();
+            deltaX = moveAmount; // Move crop box right
+            break;
+        case 'ArrowUp':
+            e.preventDefault();
+            deltaY = -moveAmount; // Move crop box up
+            break;
+        case 'ArrowDown':
+            e.preventDefault();
+            deltaY = moveAmount; // Move crop box down
+            break;
+    }
+    
+    if (deltaX !== 0 || deltaY !== 0) {
+        const cropBoxData = cropper.getCropBoxData();
+        
+        cropper.setCropBoxData({
+            left: cropBoxData.left + deltaX,
+            top: cropBoxData.top + deltaY,
+        });
+    }
+});
+
+
+// --- Crop and Border Logic ---
+cropButton.addEventListener('click', () => {
+    if (!cropper) {
+        alert('पहले कृपया एक फ़ोटो अपलोड करें।');
+        return;
+    }
+    
+    // 1. Get the base cropped image using the dynamically calculated size
+    // Note: We use the FINAL_PHOTO_W_PX derived from A4 width, guaranteeing fit.
+    const croppedCanvas = cropper.getCroppedCanvas({
+        width: FINAL_PHOTO_W_PX,
+        height: FINAL_PHOTO_H_PX,
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+
+    const needWhiteBorder = addWhiteBorderCheckbox.checked;
+    const needBlackBorder = addBlackBorderCheckbox.checked;
+
+    let finalPhotoCanvas = croppedCanvas;
+    let finalPhotoWidth = FINAL_PHOTO_W_PX;
+    let finalPhotoHeight = FINAL_PHOTO_H_PX;
+
+    // 2. सफेद बॉर्डर जोड़ें (10px)
+    if (needWhiteBorder) {
+        const whiteBorderSize = 10;
+        finalPhotoWidth += 2 * whiteBorderSize;
+        finalPhotoHeight += 2 * whiteBorderSize;
+        
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = finalPhotoWidth;
+        tempCanvas.height = finalPhotoHeight;
+        const ctx = tempCanvas.getContext('2d');
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.drawImage(finalPhotoCanvas, whiteBorderSize, whiteBorderSize);
+        finalPhotoCanvas = tempCanvas;
+    }
+
+    // 3. ब्लैक बॉर्डर जोड़ें (3px)
+    if (needBlackBorder) {
+        const blackBorderSize = 3;
+        finalPhotoWidth += 2 * blackBorderSize;
+        finalPhotoHeight += 2 * blackBorderSize;
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = finalPhotoWidth;
+        tempCanvas.height = finalPhotoHeight;
+        const ctx = tempCanvas.getContext('2d');
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.drawImage(finalPhotoCanvas, blackBorderSize, blackBorderSize, finalPhotoWidth - 2 * blackBorderSize, finalPhotoHeight - 2 * blackBorderSize);
+        finalPhotoCanvas = tempCanvas;
+    }
+    
+    finalPhotoCanvas.toBlob((blob) => {
+        if (blob) {
+            croppedImageBlob = blob;
+            const url = URL.createObjectURL(blob);
+            finalImagePreview.src = url;
+            downloadLink.href = url;
+            downloadLink.download = 'Cropped_Passport_Photo.jpeg';
+            outputArea.style.display = 'flex';
+            document.getElementById('print-options').style.display = 'flex';
+        } else {
+            alert('इमेज को प्रोसेस करने में त्रुटि हुई।');
+        }
+    }, 'image/jpeg', 0.95);
+});
+
+// --- Print Sheet Generator (A4 1x6 Final Fixed Logic) ---
+
+generatePrintButton.addEventListener('click', () => {
+    if (!croppedImageBlob) {
+        alert('पहले कृपया अपनी फ़ोटो क्रॉप और तैयार करें।');
+        return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+        createPrintSheet(img);
+    };
+    img.src = URL.createObjectURL(croppedImageBlob);
+});
+
+function createPrintSheet(singlePhotoImg) {
+    
+    // photoW now includes all borders (if selected)
+    const photoW = singlePhotoImg.width;
+    const photoH = singlePhotoImg.height;
+
+    // 1. Calculate the required space for all photos
+    const requiredPhotoWidth = photoW * PHOTO_COUNT;
+    
+    // 2. Calculate the remaining space for gaps and margins
+    const remainingSpace = A4_WIDTH_PX - requiredPhotoWidth;
+    
+    // FIX: The calculation now uses the actual final size of the cropped image (photoW), 
+    // which was limited earlier to guarantee remainingSpace >= 0.
+    if (remainingSpace < 0) {
+        // This is a safety catch, but should not happen with the dynamic sizing fix applied earlier.
+        alert('FATAL ERROR: A4 पेज पर 6 फ़ोटो फिट नहीं हो सकती।');
+        return;
+    }
+
+    // 3. Distribute the remaining space evenly across 7 slots
+    const totalDistributionPoints = PHOTO_COUNT + 1; 
+    const equalSpace = remainingSpace / totalDistributionPoints;
+    const sideMargin = equalSpace; // Left/Right margin
+    const photoGap = equalSpace;    // Margin between photos 
+
+    // Canvas बनाएँ
+    const printCanvas = document.createElement('canvas');
+    printCanvas.width = A4_WIDTH_PX;
+    printCanvas.height = A4_HEIGHT_PX;
+    const ctx = printCanvas.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, A4_WIDTH_PX, A4_HEIGHT_PX);
+
+    // इमेजेज़ को व्यवस्थित करें (Top-Center Aligned)
+    for (let c = 0; c < PHOTO_COUNT; c++) { 
+        // X कोऑर्डिनेट्स
+        const x = sideMargin + c * photoW + c * photoGap;
+        // Y कोऑर्डिनेट्स: Fixed Top Margin
+        const y = FIXED_TOP_MARGIN; 
+
+        ctx.drawImage(singlePhotoImg, x, y, photoW, photoH);
+    }
+
+    // आउटपुट अपडेट करें
+    finalImagePreview.src = printCanvas.toDataURL('image/jpeg', 0.95);
+    downloadLink.href = printCanvas.toDataURL('image/jpeg', 0.95);
+    downloadLink.download = `A4_6Photo_Print_Sheet_DPI300.jpeg`;
+    outputArea.style.display = 'flex';
+    alert(`प्रिंट शीट "A4 साइज़ में 6 फ़ोटो" सफलतापूर्वक जनरेट हो गई है!`);
+}
+
+
+// --- Utility and Event Listeners ---
+function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+// Drag/Drop Listeners
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+});
+['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+});
+['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+});
+dropArea.addEventListener('drop', (e) => { handleFiles(e.dataTransfer.files); }, false);
+fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); });
+
+
+window.onload = () => {
+    dropArea.style.display = 'flex';
+};
+</script>
+  <h2>New Code Page</h2>
+</div>
+
+<!-- Old Code Container (Default Hidden) -->
+<div id="oldApp" style="display:none;">
+  <!-- अपने Old Code HTML यहाँ paste करें -->
+<!-- Old Code -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<style>
+/* Full Screen/Responsive Styling */
+#passport-photo-app {
+    min-height: 100vh;
+    width: 100%;
+    margin: -8px; /* ब्लॉगर के डिफ़ॉल्ट मार्जिन को हटाने का प्रयास */
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f7f7f7; /* हल्का ग्रे बैकग्राउंड */
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* ऊपर से शुरू करें */
+    text-align: center;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* ड्रैग-एंड-ड्रॉप एरिया */
+#drop-area {
+    border: 3px dashed #007bff;
+    border-radius: 15px;
+    padding: 40px;
+    width: 90%;
+    max-width: 700px;
+    margin-bottom: 30px;
+    cursor: pointer;
+    background-color: #fff;
+    transition: background-color 0.3s;
+}
+
+#drop-area.highlight {
+    background-color: #e6f7ff;
+}
+
+#file-input {
+    display: none;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 25px;
+    margin: 10px 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.primary-button {
+    background-color: #28a745;
+}
+
+.primary-button:hover {
+    background-color: #1e7e34;
+}
+
+.download-button {
+    background-color: #ffc107;
+    color: #333;
+}
+
+/* इमेज और क्रॉपर कंटेनर */
+#image-container {
+    width: 90%;
+    max-width: 700px;
+    max-height: 60vh; /* अधिकतम ऊंचाई */
+    margin-bottom: 20px;
+    display: none; /* शुरू में छिपा हुआ */
+}
+
+/* Cropper.js के लिए ज़रूरी */
+#image-to-crop {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+/* नियंत्रण पैनल */
+#controls {
+    width: 90%;
+    max-width: 700px;
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: none; /* शुरू में छिपा हुआ */
+}
+
+#controls label {
+    display: block;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+/* फाइनल आउटपुट */
+#output-area {
+    width: 90%;
+    max-width: 700px;
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: none;
+}
+
+#final-image-preview {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+/* मोबाइल/टैबलेट के लिए रिस्पॉन्सिव एडजस्टमेंट */
+@media (max-width: 768px) {
+    #passport-photo-app {
+        padding: 10px;
+        align-items: stretch;
+    }
+    #drop-area, #image-container, #controls, #output-area {
+        width: 100%;
+        max-width: none;
+    }
+}
+</style>
+
+<div id="passport-photo-app">
+    <h2>🇮🇳 पासपोर्ट फोटो क्रॉपर</h2>
+    
+    <div id="drop-area">
+        <p>फ़ोटो यहां **ड्रॉप** करें या</p>
+        <input type="file" id="file-input" accept="image/*" />
+        <label for="file-input" class="button">फ़ाइल चुनें</label>
+        <p style="font-size: 14px; color: #777;">*केवल JPEG/PNG इमेज ही सपोर्टेड हैं।</p>
+    </div>
+
+    <div id="image-container">
+        <img id="image-to-crop" src="" alt="Image to Crop" style="display:none;">
+    </div>
+
+    <div id="controls">
+        <label>
+            <input type="checkbox" id="add-border-checkbox" checked> 
+            **सफेद बॉर्डर (Stock) जोड़ें** (पासपोर्ट फोटो के लिए ज़रूरी)
+        </label>
+        
+        <button id="crop-button" class="button primary-button">
+            क्रॉप और फ़ोटो तैयार करें
+        </button>
+    </div>
+
+    <div id="output-area">
+        <h3>तैयार फ़ोटो</h3>
+        <img id="final-image-preview" src="" alt="Final Passport Photo">
+        <a id="download-link" class="button download-button" download="indian_passport_photo.jpeg">
+            डाउनलोड करें
+        </a>
+    </div>
+</div>
+
+<script>
+const fileInput = document.getElementById('file-input');
+const dropArea = document.getElementById('drop-area');
+const imageToCrop = document.getElementById('image-to-crop');
+const imageContainer = document.getElementById('image-container');
+const controls = document.getElementById('controls');
+const cropButton = document.getElementById('crop-button');
+const finalImagePreview = document.getElementById('final-image-preview');
+const downloadLink = document.getElementById('download-link');
+const outputArea = document.getElementById('output-area');
+const addBorderCheckbox = document.getElementById('add-border-checkbox');
+
+let cropper;
+const PASSPORT_ASPECT_RATIO = 3.5 / 4.5; // इंडियन पासपोर्ट साइज़ का अनुपात (3.5cm चौड़ाई x 4.5cm ऊंचाई)
+
+// --- Drag/Drop और फ़ाइल हैंडलिंग ---
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+});
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+});
+
+dropArea.addEventListener('drop', (e) => {
+    handleFiles(e.dataTransfer.files);
+}, false);
+
+fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function handleFiles(files) {
+    if (files.length === 0 || !files[0].type.startsWith('image/')) {
+        alert('कृपया एक इमेज फ़ाइल चुनें।');
+        return;
+    }
+    
+    const file = files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        // 1. Cropper को नष्ट करें (अगर यह पहले से चल रहा है)
+        if (cropper) {
+            cropper.destroy();
+        }
+
+        // 2. इमेज प्रदर्शित करें और UI अपडेट करें
+        imageToCrop.src = e.target.result;
+        imageToCrop.style.display = 'block';
+        imageContainer.style.display = 'block';
+        dropArea.style.display = 'none'; // ड्रॉप एरिया छिपाएँ
+        controls.style.display = 'block';
+        outputArea.style.display = 'none'; // पिछला आउटपुट छिपाएँ
+
+        // 3. Cropper.js शुरू करें
+        cropper = new Cropper(imageToCrop, {
+            aspectRatio: PASSPORT_ASPECT_RATIO,
+            viewMode: 1, // क्रॉपर को कंटेनर के साइज़ में फिट करें
+            dragMode: 'move',
+            autoCropArea: 0.8, // स्वचालित क्रॉप क्षेत्र
+            responsive: true,
+            background: false,
+        });
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// --- क्रॉप और इमेज बनाने का लॉजिक ---
+
+cropButton.addEventListener('click', () => {
+    if (!cropper) {
+        alert('पहले कृपया एक फ़ोटो अपलोड करें।');
+        return;
+    }
+
+    // Cropper से क्रॉप किए गए Canvas को प्राप्त करें
+    const croppedCanvas = cropper.getCroppedCanvas({
+        width: 350,  // 3.5cm को 350px मान लें (DPI के लिए)
+        height: 450, // 4.5cm को 450px मान लें
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+
+    const needBorder = addBorderCheckbox.checked;
+
+    if (needBorder) {
+        // बॉर्डर के लिए एक नया Canvas बनाएँ
+        const borderSize = 10; // 10px सफेद बॉर्डर
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = croppedCanvas.width + 2 * borderSize;
+        finalCanvas.height = croppedCanvas.height + 2 * borderSize;
+        const ctx = finalCanvas.getContext('2d');
+
+        // बैकग्राउंड को सफेद रंग से भरें (बॉर्डर)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+        // क्रॉप की गई इमेज को बॉर्डर के अंदर ड्रा करें
+        ctx.drawImage(croppedCanvas, borderSize, borderSize);
+
+        // फाइनल इमेज आउटपुट
+        generateOutput(finalCanvas);
+    } else {
+        // बॉर्डर नहीं चाहिए, सीधे क्रॉप की गई इमेज का उपयोग करें
+        generateOutput(croppedCanvas);
+    }
+});
+
+function generateOutput(canvasElement) {
+    // Canvas को JPEG डेटा URL में बदलें
+    // JPEG का उपयोग अक्सर पासपोर्ट फोटो के लिए किया जाता है
+    const finalImageURL = canvasElement.toDataURL('image/jpeg', 0.95);
+
+    // आउटपुट एरिया अपडेट करें
+    finalImagePreview.src = finalImageURL;
+    downloadLink.href = finalImageURL;
+    outputArea.style.display = 'block';
+
+    // (वैकल्पिक) Cropper को नष्ट करें और UI को रीसेट करें
+    // cropper.destroy();
+    // imageContainer.style.display = 'none';
+    // controls.style.display = 'none';
+    // dropArea.style.display = 'block';
+}
+
+// शुरू में ड्रॉप एरिया को डिस्प्ले करें
+window.onload = () => {
+    dropArea.style.display = 'block';
+};
+</script>
+
+<!-- old code End -->
+  <h2>Old Code Page</h2>
+</div>
+
+<script>
+var switchBtn = document.getElementById('switchBtn');
+var newApp = document.getElementById('newApp');
+var oldApp = document.getElementById('oldApp');
+var showingNew = true;
+
+// Initialize button text
+switchBtn.textContent = "Switch to Old";
+
+switchBtn.addEventListener('click', function() {
+    if(showingNew){
+        newApp.style.display = 'none';
+        oldApp.style.display = 'block';
+        switchBtn.textContent = "Switch to New";
+    } else {
+        oldApp.style.display = 'none';
+        newApp.style.display = 'block';
+        switchBtn.textContent = "Switch to Old";
+    }
+    showingNew = !showingNew;
+});
+</script>
